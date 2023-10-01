@@ -113,7 +113,7 @@ auth_config = read_auth_config()
 store = SqlAlchemyStore()
 
 
-UNPROTECTED_ROUTES = [CREATE_USER, SIGNUP]
+UNPROTECTED_ROUTES = []
 
 
 def is_unprotected_route(path: str) -> bool:
@@ -237,6 +237,11 @@ def _get_permission_from_registered_model_name() -> Permission:
         lambda: store.get_registered_model_permission(name, username).permission
     )
 
+def validate_can_read_experiment():
+    return _get_permission_from_experiment_id().can_read
+
+def validate_can_read_experiment():
+    return _get_permission_from_experiment_id().can_read
 
 def validate_can_read_experiment():
     return _get_permission_from_experiment_id().can_read
@@ -328,6 +333,14 @@ def validate_can_delete_user():
     # only admins can delete, but admins won't reach this validator
     return False
 
+def validate_can_signup_user():
+    # only admins can sign up, but admins won't reach this validator
+    return False
+
+def validate_can_create_user():
+    # only admins can create, but admins won't reach this validator
+    return False
+
 
 BEFORE_REQUEST_HANDLERS = {
     # Routes for experiments
@@ -385,6 +398,8 @@ BEFORE_REQUEST_VALIDATORS = {
 
 BEFORE_REQUEST_VALIDATORS.update(
     {
+        (SIGNUP, "GET"): validate_can_signup_user,
+        (CREATE_USER, "POST"): validate_can_create_user,
         (GET_USER, "GET"): validate_can_read_user,
         (UPDATE_USER_PASSWORD, "PATCH"): validate_can_update_user_password,
         (UPDATE_USER_ADMIN, "PATCH"): validate_can_update_user_admin,
